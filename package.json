@@ -10,7 +10,8 @@
   },
   "dependencies": {
     "grammy": "^1.30.0",
-    "ioredis": "^5.4.1"
+    "ioredis": "^5.4.1",
+    "node-cron": "^4.4.1"
   },
   "devDependencies": {
     "@types/node": "^22.0.0",

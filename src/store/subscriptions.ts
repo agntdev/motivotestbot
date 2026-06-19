@@ -44,6 +44,20 @@ export async function removeSubscriber(chatId: number): Promise<boolean> {
   return true;
 }
 
+export async function addSubscriber(chatId: number): Promise<void> {
+  const client = getClient();
+  if (!client) return;
+  const key = k(chatId);
+  await client.set(key, "1");
+}
+
+export async function getAllChatIds(): Promise<number[]> {
+  const client = getClient();
+  if (!client) return [];
+  const keys = await client.keys(PREFIX + "*");
+  return keys.map((key) => Number(key.slice(PREFIX.length))).filter((n) => !isNaN(n));
+}
+
 export async function isSubscriber(chatId: number): Promise<boolean> {
   const client = getClient();
   if (!client) return false;
