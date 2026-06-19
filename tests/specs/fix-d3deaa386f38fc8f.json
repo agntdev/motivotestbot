@@ -1,0 +1,64 @@
+[
+  {
+    "name": "/subscribe creates a subscriber and confirms",
+    "steps": [
+      {
+        "send": { "text": "/subscribe" },
+        "expect": [
+          { "method": "sendMessage", "payload": { "text": "You have been subscribed successfully!" } }
+        ]
+      }
+    ]
+  },
+  {
+    "name": "/unsubscribe without a subscription says not subscribed",
+    "steps": [
+      {
+        "send": { "text": "/unsubscribe" },
+        "expect": [
+          { "method": "sendMessage", "payload": { "text": "You are not subscribed." } }
+        ]
+      }
+    ]
+  },
+  {
+    "name": "subscribe then unsubscribe — full round-trip",
+    "steps": [
+      {
+        "send": { "text": "/subscribe" },
+        "expect": [
+          { "method": "sendMessage", "payload": { "text": "You have been subscribed successfully!" } }
+        ]
+      },
+      {
+        "send": { "text": "/unsubscribe" },
+        "expect": [
+          { "method": "sendMessage", "payload": { "text": "You have been unsubscribed." } }
+        ]
+      }
+    ]
+  },
+  {
+    "name": "subscribe, unsubscribe, then unsubscribe again says not subscribed",
+    "steps": [
+      {
+        "send": { "text": "/subscribe" },
+        "expect": [
+          { "method": "sendMessage", "payload": { "text": "You have been subscribed successfully!" } }
+        ]
+      },
+      {
+        "send": { "text": "/unsubscribe" },
+        "expect": [
+          { "method": "sendMessage", "payload": { "text": "You have been unsubscribed." } }
+        ]
+      },
+      {
+        "send": { "text": "/unsubscribe" },
+        "expect": [
+          { "method": "sendMessage", "payload": { "text": "You are not subscribed." } }
+        ]
+      }
+    ]
+  }
+]
