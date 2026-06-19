@@ -28,7 +28,9 @@ export class MemorySessionStorage<T> implements StorageAdapter<T> {
     return this.store.has(key);
   }
 
-  readAllKeys(): string[] {
-    return [...this.store.keys()];
+  async *readAllKeys(): AsyncIterableIterator<string> {
+    for (const key of this.store.keys()) {
+      yield key;
+    }
   }
 }

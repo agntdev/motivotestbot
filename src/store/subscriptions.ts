@@ -6,7 +6,7 @@ import {
 } from "../toolkit/index.js";
 import type { RedisLike } from "../toolkit/index.js";
 
-function getSubStore(): StorageAdapter<string> {
+function getSubStore(): RedisSessionStorage<string> | MemorySessionStorage<string> {
   const url = process.env.REDIS_URL;
   if (url) {
     const require = createRequire(import.meta.url);
@@ -17,12 +17,12 @@ function getSubStore(): StorageAdapter<string> {
       maxRetriesPerRequest: null,
       lazyConnect: false,
     });
-    return new RedisSessionStorage<string>(client, "sub:");
+    return new RedisSessionStorage<string>(client as RedisLike, "sub:");
   }
   return new MemorySessionStorage<string>();
 }
 
-const store = getSubStore();
+const store: RedisSessionStorage<string> | MemorySessionStorage<string> = getSubStore();
 
 export async function addSubscriber(chatId: number): Promise<void> {
   const key = String(chatId);
@@ -37,18 +37,13 @@ export async function removeSubscriber(chatId: number): Promise<boolean> {
   return true;
 }
 
-export async function addSubscriber(chatId: number): Promise<void> {
-  const client = getClient();
-  if (!client) return;
-  const key = k(chatId);
-  await client.set(key, "1");
-}
-
 export async function getAllChatIds(): Promise<number[]> {
-  const client = getClient();
-  if (!client) return [];
-  const keys = await client.keys(PREFIX + "*");
-  return keys.map((key) => Number(key.slice(PREFIX.length))).filter((n) => !isNaN(n));
+  const ids: number[] = [];
+  for await (const key of store.readAllKeys()) {
+    const id = Number(key);
+    if (!isNaN(id)) ids.push(id);
+  }
+  return ids;
 }
 
 export async function isSubscriber(chatId: number): Promise<boolean> {
