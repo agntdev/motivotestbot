@@ -1,0 +1,41 @@
+import { Composer } from "grammy";
+import { addSubscriber, isSubscriber, removeSubscriber } from "../store/subscriptions.js";
+import { QUOTES } from "../quotes.js";
+
+const composer = new Composer();
+
+composer.command("subscribe", async (ctx) => {
+  const chatId = ctx.chat?.id;
+  if (chatId == null) {
+    await ctx.reply("Could not identify chat. Please try again.");
+    return;
+  }
+  const already = await isSubscriber(chatId);
+  if (already) {
+    await ctx.reply("You're already subscribed.");
+    return;
+  }
+  await addSubscriber(chatId);
+  await ctx.reply("You have been subscribed successfully!");
+});
+
+composer.command("unsubscribe", async (ctx) => {
+  const chatId = ctx.chat?.id;
+  if (chatId == null) {
+    await ctx.reply("Could not identify chat. Please try again.");
+    return;
+  }
+  const removed = await removeSubscriber(chatId);
+  if (removed) {
+    await ctx.reply("You have been unsubscribed.");
+  } else {
+    await ctx.reply("You are not subscribed.");
+  }
+});
+
+composer.command("quote", async (ctx) => {
+  const quote = QUOTES[Math.floor(Math.random() * QUOTES.length)];
+  await ctx.reply(quote);
+});
+
+export default composer;
