@@ -1,0 +1,13 @@
+[
+  {
+    "name": "/unsubscribe removes a subscriber",
+    "steps": [
+      {
+        "send": { "text": "/unsubscribe" },
+        "expect": [
+          { "method": "sendMessage", "payload": { "text": "You are not subscribed." } }
+        ]
+      }
+    ]
+  }
+]
