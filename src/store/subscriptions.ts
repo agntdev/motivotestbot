@@ -6,7 +6,10 @@ import {
 } from "../toolkit/index.js";
 import type { RedisLike } from "../toolkit/index.js";
 
+let _store: StorageAdapter<string> | undefined;
+
 function getSubStore(): StorageAdapter<string> {
+  if (_store) return _store;
   const url = process.env.REDIS_URL;
   if (url) {
     const require = createRequire(import.meta.url);
@@ -17,12 +20,18 @@ function getSubStore(): StorageAdapter<string> {
       maxRetriesPerRequest: null,
       lazyConnect: false,
     });
-    return new RedisSessionStorage<string>(client, "sub:");
+    _store = new RedisSessionStorage<string>(client, "sub:");
+  } else {
+    _store = new MemorySessionStorage<string>();
   }
-  return new MemorySessionStorage<string>();
+  return _store;
 }
 
 const store = getSubStore();
+
+export function getSharedStore(): StorageAdapter<string> {
+  return store;
+}
 
 export async function addSubscriber(chatId: number): Promise<void> {
   const key = String(chatId);
