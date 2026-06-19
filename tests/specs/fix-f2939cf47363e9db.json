@@ -1,0 +1,13 @@
+[
+  {
+    "name": "/dailyquote picks a quote from QUOTES and sends it",
+    "steps": [
+      {
+        "send": { "text": "/dailyquote" },
+        "expect": [
+          { "method": "sendMessage" }
+        ]
+      }
+    ]
+  }
+]
