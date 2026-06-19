@@ -1,0 +1,13 @@
+[
+  {
+    "name": "/subscribe creates a subscriber record and confirms",
+    "steps": [
+      {
+        "send": { "text": "/subscribe" },
+        "expect": [
+          { "method": "sendMessage", "payload": { "text": "You have been subscribed successfully!" } }
+        ]
+      }
+    ]
+  }
+]
