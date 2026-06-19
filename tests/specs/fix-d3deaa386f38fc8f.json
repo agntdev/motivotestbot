@@ -1,0 +1,30 @@
+[
+  {
+    "name": "/unsubscribe after /subscribe removes the subscriber",
+    "steps": [
+      {
+        "send": { "text": "/subscribe" },
+        "expect": [
+          { "method": "sendMessage", "payload": { "text": "You have been subscribed successfully!" } }
+        ]
+      },
+      {
+        "send": { "text": "/unsubscribe" },
+        "expect": [
+          { "method": "sendMessage", "payload": { "text": "You have been unsubscribed." } }
+        ]
+      }
+    ]
+  },
+  {
+    "name": "/unsubscribe without a subscription returns not-subscribed",
+    "steps": [
+      {
+        "send": { "text": "/unsubscribe" },
+        "expect": [
+          { "method": "sendMessage", "payload": { "text": "You are not subscribed." } }
+        ]
+      }
+    ]
+  }
+]

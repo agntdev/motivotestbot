@@ -1,52 +1,31 @@
 import { createRequire } from "node:module";
+import type { StorageAdapter } from "grammy";
+import {
+  MemorySessionStorage,
+  RedisSessionStorage,
+} from "../toolkit/index.js";
+import type { RedisLike } from "../toolkit/index.js";
 
-interface RedisLike {
-  get(key: string): Promise<string | null>;
-  set(key: string, value: string): Promise<unknown>;
-  del(key: string): Promise<unknown>;
-  keys(pattern: string): Promise<string[]>;
+export interface Subscriber {
+  userId: number;
+  chatId: number;
+  subscribedAt: string;
 }
 
-const PREFIX = "sub:";
-
-function k(chatId: number): string {
-  return PREFIX + String(chatId);
-}
-
-let _client: RedisLike | null | undefined;
-
-function getClient(): RedisLike | null {
-  if (_client !== undefined) return _client;
+function createSubscriberStorage(): StorageAdapter<Subscriber> {
   const url = process.env.REDIS_URL;
-  if (!url) {
-    _client = null;
-    return null;
-  }
-  try {
+  if (url) {
     const require = createRequire(import.meta.url);
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const ioredis: any = require("ioredis");
     const Redis = ioredis.default ?? ioredis.Redis ?? ioredis;
-    _client = new Redis(url, { maxRetriesPerRequest: null, lazyConnect: false }) as RedisLike;
-  } catch {
-    _client = null;
+    const client = new Redis(url, {
+      maxRetriesPerRequest: null,
+      lazyConnect: false,
+    });
+    return new RedisSessionStorage<Subscriber>(client as RedisLike, "sub:");
   }
-  return _client;
+  return new MemorySessionStorage<Subscriber>();
 }
 
-export async function removeSubscriber(chatId: number): Promise<boolean> {
-  const client = getClient();
-  if (!client) return false;
-  const key = k(chatId);
-  const exists = await client.get(key);
-  if (!exists) return false;
-  await client.del(key);
-  return true;
-}
-
-export async function isSubscriber(chatId: number): Promise<boolean> {
-  const client = getClient();
-  if (!client) return false;
-  const key = k(chatId);
-  return (await client.get(key)) !== null;
-}
+export const subscribers = createSubscriberStorage();

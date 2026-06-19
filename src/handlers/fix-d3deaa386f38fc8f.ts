@@ -1,10 +1,9 @@
 import { Composer } from "grammy";
 import { subscribers } from "../store/subscriptions.js";
-import type { Subscriber } from "../store/subscriptions.js";
 
 const composer = new Composer();
 
-composer.command("subscribe", async (ctx) => {
+composer.command("unsubscribe", async (ctx) => {
   const userId = ctx.from?.id;
   const chatId = ctx.chat?.id;
   if (userId == null || chatId == null) {
@@ -12,13 +11,13 @@ composer.command("subscribe", async (ctx) => {
     return;
   }
   const key = `${chatId}:${userId}`;
-  const record: Subscriber = {
-    userId,
-    chatId,
-    subscribedAt: new Date().toISOString(),
-  };
-  await subscribers.write(key, record);
-  await ctx.reply("You have been subscribed successfully!");
+  const exists = (await subscribers.read(key)) !== undefined;
+  if (!exists) {
+    await ctx.reply("You are not subscribed.");
+    return;
+  }
+  await subscribers.delete(key);
+  await ctx.reply("You have been unsubscribed.");
 });
 
 export default composer;
