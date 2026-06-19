@@ -1,0 +1,11 @@
+[
+  {
+    "name": "Postgres handler loads and bot processes commands without errors",
+    "steps": [
+      {
+        "send": { "text": "/start" },
+        "expect": []
+      }
+    ]
+  }
+]
