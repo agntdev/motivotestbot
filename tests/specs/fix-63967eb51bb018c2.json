@@ -1,0 +1,19 @@
+[
+  {
+    "name": "/subscribe idempotent — first subscribe succeeds, second says already subscribed",
+    "steps": [
+      {
+        "send": { "text": "/subscribe" },
+        "expect": [
+          { "method": "sendMessage", "payload": { "text": "Subscribed — you'll receive one motivational quote every morning at 09:00 UTC." } }
+        ]
+      },
+      {
+        "send": { "text": "/subscribe" },
+        "expect": [
+          { "method": "sendMessage", "payload": { "text": "You're already subscribed." } }
+        ]
+      }
+    ]
+  }
+]
