@@ -1,12 +1,16 @@
 import { createRequire } from "node:module";
-import type { StorageAdapter } from "grammy";
 import {
   MemorySessionStorage,
   RedisSessionStorage,
 } from "../toolkit/index.js";
 import type { RedisLike } from "../toolkit/index.js";
 
-function getSubStore(): StorageAdapter<string> {
+type SubStore = MemorySessionStorage<string> | RedisSessionStorage<string>;
+
+let _store: SubStore | null = null;
+
+function getStore(): SubStore {
+  if (_store) return _store;
   const url = process.env.REDIS_URL;
   if (url) {
     const require = createRequire(import.meta.url);
@@ -17,41 +21,59 @@ function getSubStore(): StorageAdapter<string> {
       maxRetriesPerRequest: null,
       lazyConnect: false,
     });
-    return new RedisSessionStorage<string>(client, "sub:");
+    _store = new RedisSessionStorage<string>(client as RedisLike, "sub:");
+  } else {
+    _store = new MemorySessionStorage<string>();
   }
-  return new MemorySessionStorage<string>();
+  return _store;
 }
 
-const store = getSubStore();
+async function resolveKeys(
+  keys: string[] | AsyncIterableIterator<string>,
+): Promise<string[]> {
+  if (Array.isArray(keys)) return keys;
+  const result: string[] = [];
+  for await (const k of keys) result.push(k);
+  return result;
+}
 
 export async function addSubscriber(chatId: number): Promise<void> {
   const key = String(chatId);
-  await store.write(key, new Date().toISOString());
+  await getStore().write(key, new Date().toISOString());
 }
 
 export async function removeSubscriber(chatId: number): Promise<boolean> {
-  const key = String(chatId);
-  const exists = await store.read(key);
-  if (exists == null) return false;
-  await store.delete(key);
+  const store = getStore();
+  const chatPrefix = `${chatId}`;
+  const allKeys = await resolveKeys(store.readAllKeys());
+  const matching = allKeys.filter(
+    (k) => k === chatPrefix || k.startsWith(`${chatPrefix}:`),
+  );
+  if (matching.length === 0) return false;
+  for (const k of matching) {
+    await store.delete(k);
+  }
   return true;
 }
 
-export async function addSubscriber(chatId: number): Promise<void> {
-  const client = getClient();
-  if (!client) return;
-  const key = k(chatId);
-  await client.set(key, "1");
-}
-
 export async function getAllChatIds(): Promise<number[]> {
-  const client = getClient();
-  if (!client) return [];
-  const keys = await client.keys(PREFIX + "*");
-  return keys.map((key) => Number(key.slice(PREFIX.length))).filter((n) => !isNaN(n));
+  const store = getStore();
+  const allKeys = await resolveKeys(store.readAllKeys());
+  const ids = new Set<number>();
+  for (const k of allKeys) {
+    const colon = k.indexOf(":");
+    const chatPart = colon < 0 ? k : k.slice(0, colon);
+    const n = Number(chatPart);
+    if (!isNaN(n)) ids.add(n);
+  }
+  return [...ids];
 }
 
 export async function isSubscriber(chatId: number): Promise<boolean> {
-  const key = String(chatId);
-  return (await store.read(key)) !== null;
+  const store = getStore();
+  const chatPrefix = `${chatId}`;
+  const allKeys = await resolveKeys(store.readAllKeys());
+  return allKeys.some(
+    (k) => k === chatPrefix || k.startsWith(`${chatPrefix}:`),
+  );
 }
