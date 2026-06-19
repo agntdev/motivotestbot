@@ -9,8 +9,8 @@ interface RedisLike {
 
 const PREFIX = "sub:";
 
-function k(chatId: number): string {
-  return PREFIX + String(chatId);
+function k(chatId: number, userId: number): string {
+  return PREFIX + String(chatId) + ":" + String(userId);
 }
 
 let _client: RedisLike | null | undefined;
@@ -34,19 +34,19 @@ function getClient(): RedisLike | null {
   return _client;
 }
 
-export async function removeSubscriber(chatId: number): Promise<boolean> {
+export async function removeSubscriber(chatId: number, userId: number): Promise<boolean> {
   const client = getClient();
   if (!client) return false;
-  const key = k(chatId);
+  const key = k(chatId, userId);
   const exists = await client.get(key);
   if (!exists) return false;
   await client.del(key);
   return true;
 }
 
-export async function isSubscriber(chatId: number): Promise<boolean> {
+export async function isSubscriber(chatId: number, userId: number): Promise<boolean> {
   const client = getClient();
   if (!client) return false;
-  const key = k(chatId);
+  const key = k(chatId, userId);
   return (await client.get(key)) !== null;
 }
