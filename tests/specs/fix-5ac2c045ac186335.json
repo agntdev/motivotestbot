@@ -1,0 +1,11 @@
+[
+  {
+    "name": "fix-5ac2c045ac186335 handler loads and bot processes commands without errors",
+    "steps": [
+      {
+        "send": { "text": "/start" },
+        "expect": []
+      }
+    ]
+  }
+]
