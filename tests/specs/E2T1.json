@@ -1,0 +1,13 @@
+[
+  {
+    "name": "/quote replies with a motivational quote",
+    "steps": [
+      {
+        "send": { "text": "/quote" },
+        "expect": [
+          { "method": "sendMessage" }
+        ]
+      }
+    ]
+  }
+]
