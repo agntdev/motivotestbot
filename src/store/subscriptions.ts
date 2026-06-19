@@ -24,6 +24,11 @@ function getSubStore(): StorageAdapter<string> {
 
 const store = getSubStore();
 
+export async function addSubscriber(chatId: number): Promise<void> {
+  const key = String(chatId);
+  await store.write(key, new Date().toISOString());
+}
+
 export async function removeSubscriber(chatId: number): Promise<boolean> {
   const key = String(chatId);
   const exists = await store.read(key);

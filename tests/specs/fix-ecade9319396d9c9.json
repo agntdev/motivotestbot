@@ -1,0 +1,19 @@
+[
+  {
+    "name": "subscribe then unsubscribe — happy path",
+    "steps": [
+      {
+        "send": { "text": "/subscribe" },
+        "expect": [
+          { "method": "sendMessage", "payload": { "text": "You have been subscribed successfully!" } }
+        ]
+      },
+      {
+        "send": { "text": "/unsubscribe" },
+        "expect": [
+          { "method": "sendMessage", "payload": { "text": "You have been unsubscribed." } }
+        ]
+      }
+    ]
+  }
+]
