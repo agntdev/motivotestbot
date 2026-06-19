@@ -26,6 +26,8 @@ const store = getSubStore();
 
 export async function addSubscriber(chatId: number): Promise<void> {
   const key = String(chatId);
+  const existing = await store.read(key);
+  if (existing != null) return;
   await store.write(key, new Date().toISOString());
 }
 

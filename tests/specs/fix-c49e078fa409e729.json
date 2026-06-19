@@ -1,0 +1,30 @@
+[
+  {
+    "name": "/subcheck — reports not subscribed when no subscription exists",
+    "steps": [
+      {
+        "send": { "text": "/subcheck" },
+        "expect": [
+          { "method": "sendMessage", "payload": { "text": "You are not subscribed." } }
+        ]
+      }
+    ]
+  },
+  {
+    "name": "/subcheck — reports subscribed after subscription",
+    "steps": [
+      {
+        "send": { "text": "/subscribe" },
+        "expect": [
+          { "method": "sendMessage", "payload": { "text": "You have been subscribed successfully!" } }
+        ]
+      },
+      {
+        "send": { "text": "/subcheck" },
+        "expect": [
+          { "method": "sendMessage", "payload": { "text": "You are currently subscribed." } }
+        ]
+      }
+    ]
+  }
+]
