@@ -4,7 +4,6 @@ import {
   MemorySessionStorage,
   RedisSessionStorage,
 } from "../toolkit/index.js";
-import type { RedisLike } from "../toolkit/index.js";
 
 function getSubStore(): StorageAdapter<string> {
   const url = process.env.REDIS_URL;
@@ -37,18 +36,16 @@ export async function removeSubscriber(chatId: number): Promise<boolean> {
   return true;
 }
 
-export async function addSubscriber(chatId: number): Promise<void> {
-  const client = getClient();
-  if (!client) return;
-  const key = k(chatId);
-  await client.set(key, "1");
-}
-
 export async function getAllChatIds(): Promise<number[]> {
-  const client = getClient();
-  if (!client) return [];
-  const keys = await client.keys(PREFIX + "*");
-  return keys.map((key) => Number(key.slice(PREFIX.length))).filter((n) => !isNaN(n));
+  if (store instanceof MemorySessionStorage) {
+    return store.readAllKeys().map(Number).filter((n) => !isNaN(n));
+  }
+  const ids: number[] = [];
+  for await (const key of (store as RedisSessionStorage<string>).readAllKeys()) {
+    const n = Number(key);
+    if (!isNaN(n)) ids.push(n);
+  }
+  return ids;
 }
 
 export async function isSubscriber(chatId: number): Promise<boolean> {
