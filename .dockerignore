@@ -1,0 +1,12 @@
+node_modules/
+dist/
+.git/
+.gitignore
+*.tsbuildinfo
+tests/
+test/
+docs/
+tasks/
+README.md
+AGENTS.md
+.env.example
