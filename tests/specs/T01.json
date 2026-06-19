@@ -1,0 +1,13 @@
+[
+  {
+    "name": "/status replies with OK",
+    "steps": [
+      {
+        "send": { "text": "/status" },
+        "expect": [
+          { "method": "sendMessage", "payload": { "text": "OK" } }
+        ]
+      }
+    ]
+  }
+]

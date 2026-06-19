@@ -1,4 +1,8 @@
-import { createBot } from "./toolkit/index.js";
+import { readdirSync } from "node:fs";
+import { fileURLToPath } from "node:url";
+import { dirname, resolve } from "node:path";
+import type { Middleware } from "grammy";
+import { type BotContext, createBot } from "./toolkit/index.js";
 
 // The per-chat session shape (ephemeral conversation state only). Extend as the
 // bot grows. Durable domain data must NOT live here — use the toolkit's
@@ -18,9 +22,29 @@ export function buildBot(token: string) {
     initial: () => ({}),
   });
 
-  bot.command("start", async (ctx) => {
-    await ctx.reply("Welcome! I am ready to help.");
-  });
+  loadHandlers(bot);
 
   return bot;
+}
+
+function loadHandlers(bot: ReturnType<typeof createBot<Session>>): void {
+  const __dirname = dirname(fileURLToPath(import.meta.url));
+  const handlersDir = resolve(__dirname, "handlers");
+  let files: string[];
+  try {
+    files = readdirSync(handlersDir).filter((f) => f.endsWith(".js"));
+  } catch {
+    return;
+  }
+  for (const file of files) {
+    import(`./handlers/${file}`)
+      .then((mod: { default?: unknown }) => {
+        if (mod.default) {
+          bot.use(mod.default as Middleware<BotContext<Session>>);
+        }
+      })
+      .catch((e: unknown) => {
+        console.error(`[agntdev-bot] failed to load handler ${file}:`, e);
+      });
+  }
 }
